@@ -1,17 +1,27 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "shader.h"
+#include "MeshCreator.h"
+
 //Screen Dimensions Variables
 const unsigned int screen_width = 1024;
 const unsigned int screen_height = 768;
 //Number of Vertices
 const GLuint NumVertices = 6;
-void processInput(GLFWwindow* window);
+int shaderProgram;
 
+void processInput(GLFWwindow* window);
+void render(struct MeshData* meshData);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
+
+bool isWireFrame = false;
 int main() {
     // Initialize GLFW and check if it works
     // ------------------------------
@@ -41,18 +51,22 @@ int main() {
         return -1;
     }
     glfwMakeContextCurrent(window); // Set the windows to render
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); //What happens when we change the window size
     // Load all OpenGL function pointers and check if GLAD works...
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+
+    shaderProgram = createShaderProgram("vertex.vs", "fragment.fs");
+    MeshData* meshData = createMesh();
+    
     //This loop renders the window we created above
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
-        static const float red[] = { 1.0f, 0.0f, 0.0f, 0.0f };
-        glClearBufferfv(GL_COLOR, 0, red);
+        render(meshData);
         //Swap buffers
         glfwSwapBuffers(window);
         //Poll for Input/Output Events such a key pressed, mouse clicked etc...
@@ -60,6 +74,7 @@ int main() {
     }
     //Terminate, clearing all previously allocated GLFW resources.
     glfwTerminate();
+    delete meshData;
     return 0;
 }
 //If a relevant key (e.g. Escape) is pressed then execute the code in the body. Herein close the window.
@@ -69,3 +84,22 @@ void processInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 }
 
+void render(struct MeshData* meshData) {
+
+    glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glUseProgram(shaderProgram);
+    glBindVertexArray(meshData->objVAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+    glDrawArrays(GL_TRIANGLES, 0, meshData->numVertices);
+
+    
+    
+}
+
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}
