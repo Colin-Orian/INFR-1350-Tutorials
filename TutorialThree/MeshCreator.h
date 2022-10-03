@@ -11,5 +11,5 @@ struct MeshData {
     int numVertices;
     int triangles;
 };
-struct MeshData* createMesh();
+struct MeshData* createMesh(std::string fileName, int shaderProgram);
 

@@ -60,7 +60,7 @@ int main() {
     }
 
     shaderProgram = createShaderProgram("vertex.vs", "fragment.fs");
-    MeshData* meshData = createMesh();
+    MeshData* meshData = createMesh("monkey.obj", shaderProgram);
     
     //This loop renders the window we created above
     while (!glfwWindowShouldClose(window))
@@ -90,10 +90,8 @@ void render(struct MeshData* meshData) {
     glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(shaderProgram);
     glBindVertexArray(meshData->objVAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-    glDrawArrays(GL_TRIANGLES, 0, meshData->numVertices);
+    glDrawElements(GL_TRIANGLES, 3 * meshData->triangles, GL_UNSIGNED_SHORT, NULL);
 
-    
-    
 }
 
 
