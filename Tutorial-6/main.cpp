@@ -26,7 +26,7 @@ bool isWireFrame = false;
 glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 camPos = glm::vec3(0.0f, 0.0f, 200.0f);
 glm::vec3 camForward = glm::vec3(0.0f, 0.0f, -1.0f);
-float cameraSpeed = 1.0f;
+float cameraSpeed = 0.25f;
 
 
 
@@ -146,7 +146,7 @@ void update() {
 
     transform = glm::translate(transform, glm::vec3(0.5f, 0.0f, 100.0f));
 
-    transform = glm::rotate(transform, 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    transform = glm::rotate(transform, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
     transform = glm::scale(transform, glm::vec3(1.0f, 1.0f, 1.0f));
 
@@ -154,7 +154,8 @@ void update() {
 void render(struct MeshData* meshData) {
 
     glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(shaderProgram);
 
     view = glm::lookAt(camPos, camPos + camForward, camUp);
@@ -163,10 +164,23 @@ void render(struct MeshData* meshData) {
     loadUniformMat4x4(shaderProgram, "projection", projection);
     loadUniformMat4x4(shaderProgram, "view", view);
     glBindVertexArray(meshData->objVAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-    glDrawElements(GL_TRIANGLES, 3 * meshData->triangles, GL_UNSIGNED_SHORT, NULL);
+
+    glBindBuffer(GL_ARRAY_BUFFER, meshData->posVBO);
+    GLint vPosition = glGetAttribLocation(shaderProgram, "vPosition");
+    glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(vPosition);
+
+    glBindBuffer(GL_ARRAY_BUFFER, meshData->normalVBO);
+    GLint vNormal = glGetAttribLocation(shaderProgram, "vNormal");
+    glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(vNormal);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData->indexVBO);
+
+    glDrawElements(GL_TRIANGLES, meshData->triangles, GL_UNSIGNED_INT, NULL);
 
     loadUniformMat4x4(shaderProgram, "model", transformSecond);
-    glDrawElements(GL_TRIANGLES, 3 * meshData->triangles, GL_UNSIGNED_SHORT, NULL);
+    //glDrawElements(GL_TRIANGLES, 3 * meshData->triangles, GL_UNSIGNED_INT, NULL);
     
 
 }

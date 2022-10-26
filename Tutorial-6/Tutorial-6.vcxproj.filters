@@ -28,7 +28,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tiny_obj_loader.cc">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
