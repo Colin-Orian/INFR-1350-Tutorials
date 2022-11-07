@@ -33,6 +33,8 @@ float cameraSpeed = 0.25f;
 glm::mat4 transform = glm::mat4(1);
 glm::mat4 transformSecond = glm::mat4(1);
 
+glm::mat4 normalMatrix = glm::mat4(1);
+
 glm::mat4 projection = glm::mat4(1);
 glm::mat4 view = glm::mat4(1);
 
@@ -88,6 +90,7 @@ int main() {
     update();
     updateSecond();
     //This loop renders the window we created above
+    glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -154,15 +157,18 @@ void update() {
 void render(struct MeshData* meshData) {
 
     glClearColor(0.0f, 1.0f, 1.0f, 0.0f);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    //glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(shaderProgram);
 
     view = glm::lookAt(camPos, camPos + camForward, camUp);
-
+    transform = glm::rotate(transform, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    normalMatrix = glm::transpose(glm::inverse(transform));
+    loadUniformMat4x4(shaderProgram, "normMat", normalMatrix);
     loadUniformMat4x4(shaderProgram, "model", transform);
     loadUniformMat4x4(shaderProgram, "projection", projection);
     loadUniformMat4x4(shaderProgram, "view", view);
+    loadUniformVec3(shaderProgram, "eyePos", camPos);
     glBindVertexArray(meshData->objVAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 
     glBindBuffer(GL_ARRAY_BUFFER, meshData->posVBO);
@@ -178,8 +184,9 @@ void render(struct MeshData* meshData) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData->indexVBO);
 
     glDrawElements(GL_TRIANGLES, meshData->triangles, GL_UNSIGNED_INT, NULL);
-
+    normalMatrix = glm::transpose(glm::inverse(transformSecond));
     loadUniformMat4x4(shaderProgram, "model", transformSecond);
+    loadUniformMat4x4(shaderProgram, "normMat", normalMatrix);
     //glDrawElements(GL_TRIANGLES, 3 * meshData->triangles, GL_UNSIGNED_INT, NULL);
     
 

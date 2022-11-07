@@ -54,6 +54,11 @@ void loadUniformMat4x4(GLuint shaderProgam, std::string uniformName, glm::mat4 d
 	int varLoc = glGetUniformLocation(shaderProgam, uniformName.c_str());
 	glUniformMatrix4fv(varLoc, 1, 0, glm::value_ptr(data));
 }
+
+void loadUniformVec3(GLuint shaderProgram, std::string uniformName, glm::vec3 data) {
+	int varLoc = glGetUniformLocation(shaderProgram, uniformName.c_str());
+	glUniform3f(varLoc, data.x, data.y, data.z);
+}
 int createFragmentShader(std::string shaderCode)
 {
 
