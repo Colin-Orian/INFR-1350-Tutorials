@@ -64,12 +64,20 @@ MeshData* createMesh(std::string fileName, int shaderProgram)
     }
 
     
+    //Retrive the triangle's UV coords
+    int nt = inattrib.texcoords.size();
+    GLfloat* uvCoords = new GLfloat[nt];
+    for (int i = 0; i < nt; i++) {
+        uvCoords[i] = inattrib.texcoords[i];
+    }
+
 
     meshData->numVertices = nv;
     std::cout << "Number Triangles " << meshData->triangles << std::endl;
     std::cout << "Number Vertices: " << nv << std::endl;
     std::cout << "Number Normals: " << nn << std::endl;
     std::cout << "Number Indicies: " << ni << std::endl;
+    std::cout << "Number UVs" << nt << std::endl;
     //std::cout << "test" << std::endl;
 
     glGenVertexArrays(1, &meshData->objVAO);
@@ -96,7 +104,10 @@ MeshData* createMesh(std::string fileName, int shaderProgram)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData->indexVBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, ni * sizeof(GLuint), indices, GL_STATIC_DRAW);
 
-    
+    glGenBuffers(1, &meshData->uvVBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData->uvVBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, nt * sizeof(float), uvCoords, GL_STATIC_DRAW);
+
     glUseProgram(shaderProgram);
 
     GLint vPosition = glGetAttribLocation(shaderProgram, "vPosition");
@@ -107,13 +118,16 @@ MeshData* createMesh(std::string fileName, int shaderProgram)
     glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(vNormal);
 
-
+    GLint vTexCoord = glGetAttribLocation(shaderProgram, "vTex");
+    glVertexAttribPointer(vTexCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(vTexCoord);
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     glBindVertexArray(0);
 
     delete[] vertices;
     delete[] normals;
+    delete[] uvCoords;
     delete[] indices;
     return meshData;
 }

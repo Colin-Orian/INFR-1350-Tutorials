@@ -9,6 +9,7 @@ struct MeshData {
     GLuint posVBO;
     GLuint normalVBO;
     GLuint indexVBO;
+    GLuint uvVBO;
     int numVertices;
     int triangles;
 };

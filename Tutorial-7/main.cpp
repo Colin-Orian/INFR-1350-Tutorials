@@ -8,17 +8,21 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "shader.h"
 #include "MeshCreator.h"
-
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 //Screen Dimensions Variables
 const unsigned int screen_width = 1024;
 const unsigned int screen_height = 768;
 //Number of Vertices
 const GLuint NumVertices = 6;
 int shaderProgram;
+unsigned int texture;
 
 void processInput(GLFWwindow* window);
 void render(struct MeshData* meshData);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void applyTexture(unsigned int& texture, std::string fileName);
+
 void update();
 void updateSecond();
 bool isWireFrame = false;
@@ -91,6 +95,8 @@ int main() {
     updateSecond();
     //This loop renders the window we created above
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    applyTexture(texture, "Main_Base_Color.jpg");
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -136,7 +142,7 @@ void processInput(GLFWwindow* window)
 //Perform the desired transformations to our transformation matrix
 void updateSecond() {
     
-    transformSecond = glm::translate(transformSecond, glm::vec3(-0.5f, 0.0f, 100.0f));
+    transformSecond = glm::translate(transformSecond, glm::vec3(-0.5f, 0.0f, 0.0f));
     
     transformSecond = glm::rotate(transformSecond, 180.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     
@@ -161,6 +167,7 @@ void render(struct MeshData* meshData) {
     //glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(shaderProgram);
 
+    glBindTexture(GL_TEXTURE_2D, texture);
     view = glm::lookAt(camPos, camPos + camForward, camUp);
     transform = glm::rotate(transform, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     normalMatrix = glm::transpose(glm::inverse(transform));
@@ -181,13 +188,17 @@ void render(struct MeshData* meshData) {
     glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(vNormal);
 
+    GLint vTexCoord = glGetAttribLocation(shaderProgram, "vTex");
+    glVertexAttribPointer(vTexCoord, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(vTexCoord);
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData->indexVBO);
 
     glDrawElements(GL_TRIANGLES, meshData->triangles, GL_UNSIGNED_INT, NULL);
     normalMatrix = glm::transpose(glm::inverse(transformSecond));
     loadUniformMat4x4(shaderProgram, "model", transformSecond);
     loadUniformMat4x4(shaderProgram, "normMat", normalMatrix);
-    //glDrawElements(GL_TRIANGLES, 3 * meshData->triangles, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_TRIANGLES, 3 * meshData->triangles, GL_UNSIGNED_INT, NULL);
     
 
 }
@@ -198,4 +209,29 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+
+void applyTexture(unsigned int& texture, std::string fileName) {
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture); // The texture object is applied with all the texture operations
+
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set GL_REPEAT as the wrapping method
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load(fileName.c_str(), &width, &height, &nrChannels, 0);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+        std::cout << "Faild to load texture" << std::endl;
+    }
+
+    stbi_image_free(data);
 }

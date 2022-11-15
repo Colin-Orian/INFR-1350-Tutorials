@@ -4,12 +4,15 @@ in vec3 ourColor;
 in vec3 vertPos;
 in vec3 normal;
 in vec3 fragPos;
+in vec2 TexCoord;
+// texture sampler
+uniform sampler2D texture1;
 uniform vec3 eyePos;
 
 void main()
 {
    vec3 lightPos = vec3(0.0f, 6.0f, 125.0f);
-   vec3 objectColour = vec3(1.0f, 0.0f, 0.0f);
+   vec3 objectColour = texture(texture1, TexCoord).xyz;
    vec3 lightColour = vec3(1.0f, 1.0f, 1.0f);
 
    float ambientStrength = 0.3f;
@@ -31,6 +34,8 @@ void main()
    float specular = pow(max(dot(viewDir, reflectDir), 0.0f), shininess);
    vec3 specularLight = specularStrength * specular * lightColour;
 
-   vec3 totalLight = (ambientLight + 0.5*diffuseLight + specularLight) * objectColour;
+   vec3 totalLight = (ambientLight + diffuseLight + specularLight) * objectColour;
    FragColor = vec4(totalLight, 1.0f);
+
+   
 }
