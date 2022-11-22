@@ -19,6 +19,8 @@ void main()
    vec3 ambientLight = ambientStrength * lightColour;   
    
    vec3 norm = normalize(normal);
+  
+
    vec3 lightDir = normalize(lightPos - fragPos);
    float angleIncident = max(dot(lightDir, norm), 0.0f);
    vec3 diffuseLight = angleIncident * lightColour;
@@ -35,6 +37,7 @@ void main()
    vec3 specularLight = specularStrength * specular * lightColour;
 
    vec3 totalLight = (ambientLight + diffuseLight + specularLight) * objectColour;
+
    FragColor = vec4(totalLight, 1.0f);
 
    

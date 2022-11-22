@@ -16,7 +16,9 @@ const unsigned int screen_height = 768;
 //Number of Vertices
 const GLuint NumVertices = 6;
 int shaderProgram;
-unsigned int texture;
+
+unsigned int texture1;
+unsigned int texture2;
 
 void processInput(GLFWwindow* window);
 void render(struct MeshData* meshData);
@@ -96,7 +98,9 @@ int main() {
     //This loop renders the window we created above
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    applyTexture(texture, "Main_Base_Color.jpg");
+    applyTexture(texture1, "Gold_Brick_Base_Color.jpg");
+    applyTexture(texture2, "Main_Base_Color.jpg");
+
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -167,7 +171,12 @@ void render(struct MeshData* meshData) {
     //glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(shaderProgram);
 
-    glBindTexture(GL_TEXTURE_2D, texture);
+    loadUniformInt1(shaderProgram, "texture1", 0);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+
+
     view = glm::lookAt(camPos, camPos + camForward, camUp);
     transform = glm::rotate(transform, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
     normalMatrix = glm::transpose(glm::inverse(transform));
@@ -195,6 +204,10 @@ void render(struct MeshData* meshData) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshData->indexVBO);
 
     glDrawElements(GL_TRIANGLES, meshData->triangles, GL_UNSIGNED_INT, NULL);
+
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture2);
     normalMatrix = glm::transpose(glm::inverse(transformSecond));
     loadUniformMat4x4(shaderProgram, "model", transformSecond);
     loadUniformMat4x4(shaderProgram, "normMat", normalMatrix);
